@@ -10,7 +10,7 @@ from rest_framework.permissions import AllowAny
 
 
 def homepage(request):
-    return HttpResponse("<h1>This is Api for social <br> api/signup , api/login")
+    return HttpResponse("<h1>This is Api for social</h1> <br> /api/signup/ , /api/login/ <br> /api/search/ <br> /api/friend-requests/ <br> /api/friend-requests/pending/")
 
 class SignupView(generics.CreateAPIView):
 
