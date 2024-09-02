@@ -1,2 +1,4 @@
 django
 djangorestframework
+django-cors-headers
+django-admin-inline-paginator

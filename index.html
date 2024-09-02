@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Interaction</title>
+    <script>
+        // URLs
+        const baseURL = "http://127.0.0.1:8000/api/";
+        const loginURL = `${baseURL}login/`;
+        const signupURL = `${baseURL}signup/`;
+        const searchURL = `${baseURL}search/`;
+        const requestURL = `${baseURL}friend-requests/`;
+        const requestPendingURL = `${baseURL}friend-requests/pending/`;
+
+        let authToken = ''; 
+
+        async function login() {
+            const email = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            const response = await fetch(loginURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            
+                body: JSON.stringify({ email, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                authToken = data.token;
+                localStorage.setItem('authToken', authToken);
+                alert('Login successful!');
+                console.log('Token:', authToken);
+            } else {
+                alert('Login failed!');
+            }
+        }
+
+        async function signup() {
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            const response = await fetch(signupURL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                mode: 'no-cors',
+                body: JSON.stringify({ username, email, password })
+            });
+
+            if (response.ok) {
+                alert('Signup successful!');
+            } else {
+                alert('Signup failed!');
+            }
+        }
+
+        async function searchUsers() {
+            const keyword = document.getElementById('search-keyword').value;
+            const searchResult = document.getElementById('searchResult');
+            const response = await fetch(`${searchURL}?search=${encodeURIComponent(keyword)}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Token ${authToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                    searchResult.textContent = ''; 
+
+                    if (data.length > 0) {
+                        data.forEach(request => {
+                            // const requestElement = document.createElement('p');
+                            searchResult.textContent = `
+                                 ID: ${request.id} \n, 
+                                email: ${request.email}, 
+                                Name: ${request.name},
+                                Username :  (${request.username}), 
+                            `;
+                            // searchResult.appendChild(requestElement);
+                        });
+
+
+                // alert('Search successful! Check the console for results.');
+                console.log('Search results:', data);
+                if (data.length === 0){
+                    alert(`No data found!!  `);
+                }
+            } else {
+                alert('Search failed!');
+            }
+        }}
+
+        async function sendFriendRequest() {
+            const userId = document.getElementById('friend-user-id').value;
+
+            const response = await fetch(requestURL, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: userId })
+            });
+
+            if (response.ok) {
+                alert('Friend request sent!');
+            } else {
+                alert('Failed to send friend request!');
+            }
+        }
+
+        async function getPendingRequests() {
+            let pending_req_details = document.getElementById("pending_req_details")
+            const response = await fetch(requestPendingURL, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Token ${authToken}`
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                pending_req_details.textContent = ''; 
+
+                if (data.sent.length > 0){
+                    let sendNam = document.createElement('h3')
+                    data.sent.forEach(request => {
+                        sendNam.textContent=`Sender -> ${request.sender.name} ${request.sender.email}`
+                        pending_req_details.appendChild(sendNam);
+                    });
+                    data.sent.forEach(request => {
+                        
+                        const sendElement = document.createElement('p');
+                        sendElement.textContent = `
+                        Id: ${request.id}, 
+                        To: ${request.receiver.name} (${request.receiver.email}), 
+                        Created At: ${new Date(request.created_at).toLocaleString()}, 
+                        Accepted: ${request.is_accepted ? 'Yes' : 'Pending'}
+                        `;
+                        pending_req_details.appendChild(sendElement);
+                        
+                    });
+                }
+                else {
+                    pending_req_details.textContent = 'No requests Sent';
+                }
+
+                // if (data.received.length > 0) {
+                //     data.received.forEach(request => {
+                //         const requestElement = document.createElement('p');
+                //         requestElement.textContent = `
+                //             Request ID: ${request.id} \n, 
+                //             From: ${request.sender.name} (${request.sender.email}), 
+                //             To: ${request.receiver.name} (${request.receiver.email}), 
+                //             Created At: ${new Date(request.created_at).toLocaleString()}, 
+                //             Accepted: ${request.is_accepted ? 'Yes' : 'No'}
+                //         `;
+
+                //         pending_req_details.appendChild(requestElement);
+                //     });
+                // } else {
+                //     pending_req_details.textContent = 'No requests Received';
+                // }
+            } 
+            else {
+                alert('Failed to fetch pending requests!');
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>API Interaction</h1>
+    
+    <h2>Search Users</h2>
+    <input type="text" id="search-keyword" placeholder="Search by keyword">
+    <button onclick="searchUsers()">Search</button>
+    <div>
+        <p id="searchResult"></p>
+    </div>
+    
+    <h2>Signup</h2>
+    <input type="text" id="signup-username" placeholder="Username">
+    <input type="email" id="signup-email" placeholder="Email">
+    <input type="password" id="signup-password" placeholder="Password">
+    <button onclick="signup()">Signup</button>
+    
+    <h2>Login</h2>
+    <input type="email" id="login-username" placeholder="Email">
+    <input type="password" id="login-password" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+
+
+    <h2>Send Friend Request</h2>
+    <input type="text" id="friend-user-id" placeholder="User ID">
+    <button onclick="sendFriendRequest()">Send Friend Request</button>
+
+    <h2>View Pending Friend Requests</h2>
+    <button onclick="getPendingRequests()">View Pending Requests</button>
+    <div id="pending_req_details"></div>
+</body>
+</html>
