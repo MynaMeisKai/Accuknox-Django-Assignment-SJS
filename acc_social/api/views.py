@@ -142,3 +142,19 @@ class PendingFriendRequestsView(generics.ListAPIView):
         return Response(data)
 
 
+class FriendView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        friendships = Friendships.objects.filter(
+            (models.Q(user1=user) | models.Q(user2=user)) )
+
+        friends = [
+            friendship.user1 if friendship.user2 == user else friendship.user2
+            for friendship in friendships
+        ]
+
+        friend_data = UserSerializer(friends, many=True).data
+
+        return Response({"friends": friend_data}, status=status.HTTP_200_OK)
