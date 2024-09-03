@@ -13,9 +13,9 @@ STEP - 2 :
 
 open cmd in windows
 
-if you need a virtual environment for this project just use this command -> <venv name> is "any name"
+if you need a virtual environment for this project just use this command -> -venv name- is "any name"
 
-	python -m venv <venv name>
+	python -m venv venv name
 
 	<venv name>\Scripts\activate
 
