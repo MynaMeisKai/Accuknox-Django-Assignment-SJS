@@ -1,1 +1,0 @@
-# Accuknox-Django-Assignment-SJS
